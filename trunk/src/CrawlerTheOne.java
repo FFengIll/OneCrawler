@@ -24,21 +24,24 @@ public class CrawlerTheOne {
 
 	boolean debug=true;
 	
-	final int VOL_GAP=2;
+	final static int VOL_COUNT=5;
+	final static String volUrlStr="http://wufazhuce.com/one/vol.";
 
-	//Ä¿±ê£¨Ã¿Ò»Ò»¸öÓï¾ä£©Ç°Ò»Ìõitem
+	//ç›®æ ‡ï¼ˆæ¯ä¸€ä¸€ä¸ªè¯­å¥ï¼‰å‰ä¸€æ¡item
 	Pattern prePattern=Pattern.compile(
 			"<div class=\"one-cita\">");
-	//htmlÔªËØ
+	//htmlå…ƒç´ 
 	Pattern htmlPattern=Pattern.compile(
 			"<[^<|^>]*>");
-	//volºÅ
+	//volå·
 	Pattern tituloPat=Pattern.compile("");
-	//ÈÕÆÚ
+	//æ—¥æœŸ
 	Pattern domPat=Pattern.compile("<p class=\"dom\">");
-	//ÄêÔÂ
+	//å¹´æœˆ
 	Pattern mayPat=Pattern.compile("<p class=\"may\">");
-
+	
+	
+	
 	/*
 	 * 
 	 * <div class="fp-one-titulo-pubdate">
@@ -48,7 +51,7 @@ public class CrawlerTheOne {
                             </div>
 	 */
 	/*
-	Ô¸Äã±È±ğÈË¸ü²»ÅÂÒ»¸öÈË¶À´¦£¬Ô¸ÈÕºóÌ¸ÆğÊ±Äã»á±»×Ô¼º¸Ğ¶¯¡£from ÁõÍ¬¡¶ÄãµÄ¹Â¶À£¬Ëä°ÜÓÌÈÙ¡·                    </div>
+	æ„¿ä½ æ¯”åˆ«äººæ›´ä¸æ€•ä¸€ä¸ªäººç‹¬å¤„ï¼Œæ„¿æ—¥åè°ˆèµ·æ—¶ä½ ä¼šè¢«è‡ªå·±æ„ŸåŠ¨ã€‚from åˆ˜åŒã€Šä½ çš„å­¤ç‹¬ï¼Œè™½è´¥çŠ¹è£ã€‹                    </div>
     <div class="one-pubdate">
         <p class="dom">6</p>
         <p class="may">Aug 2014</p>
@@ -56,10 +59,10 @@ public class CrawlerTheOne {
 	 */
 
 	private void visitVol(int vol) {
-		final String volUrlStr="http://wufazhuce.com/one/vol.";
+		
 		HttpClient hClient=new DefaultHttpClient();
+		
 		try {
-
 			httpget=new HttpGet(volUrlStr+vol);
 			response=hc.execute(httpget);
 			entity=response.getEntity();
@@ -76,7 +79,7 @@ public class CrawlerTheOne {
 	}
 
 
-	private void visitVol(int oldvol, int newvol) {
+	private void visitVolsFromTo(int oldvol, int newvol) {
 		for (int i = newvol; i >= oldvol; i--) {
 			visitVol(i);
 		}
@@ -84,30 +87,30 @@ public class CrawlerTheOne {
 
 
 	/**
-	 * »ñÈ¡×îĞÂµÄvol±àºÅ
+	 * è·å–æœ€æ–°çš„volç¼–å·
 	 * @return
 	 */
 	private int getNewestVol(HttpEntity entity) {
 
 		try {
 			InputStream inSm = entity.getContent();
-			Scanner inScn = new Scanner(inSm/*, "UTF-8"*/);//É¨ÃèÆ÷
+			Scanner inScn = new Scanner(inSm/*, "UTF-8"*/);//æ‰«æå™¨
 			Pattern parttern=Pattern.compile(
 					"http://wufazhuce.com/one/vol\\.(\\d+)");
-			//ÕıÔò±í´ïÊ½¶¨Òå¸ñ¾Ö
-			//ÕÒµ½×îĞÂµÄurl¼´¿É£¬¼´ÕÒµ½×îĞÂµÄvol±àºÅ¼´¿É
+			//æ­£åˆ™è¡¨è¾¾å¼å®šä¹‰æ ¼å±€
+			//æ‰¾åˆ°æœ€æ–°çš„urlå³å¯ï¼Œå³æ‰¾åˆ°æœ€æ–°çš„volç¼–å·å³å¯
 			Matcher matcher;
 			String str="";
 			int vol=0;
 
-			//»ñÈ¡vol±êºÅ
+			//è·å–volæ ‡å·
 			while (inScn.hasNextLine()) { 	
 				str=inScn.nextLine();
 				str=str.trim();
 				matcher=parttern.matcher(str);
 
 				if (matcher.find()){
-					str = matcher.group(1);//»ñÈ¡×îĞÂvolºÅ
+					str = matcher.group(1);//è·å–æœ€æ–°volå·
 					vol=Integer.parseInt(str);
 					System.out.println(vol);
 					break;
@@ -138,10 +141,10 @@ public class CrawlerTheOne {
 			return vol;
 
 		} catch (IllegalStateException e) {
-			// TODO ×Ô¶¯Éú³ÉµÄ catch ¿é
+			// TODO è‡ªåŠ¨ç”Ÿæˆçš„ catch å—
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO ×Ô¶¯Éú³ÉµÄ catch ¿é
+			// TODO è‡ªåŠ¨ç”Ÿæˆçš„ catch å—
 			e.printStackTrace();
 		}
 
@@ -158,7 +161,7 @@ public class CrawlerTheOne {
 	}
 
 
-	public void visitTheOne() throws ClientProtocolException, IOException {
+	public void visitTheOne(int volnumber) throws ClientProtocolException, IOException {
 		int vol=0;
 		hc=new DefaultHttpClient();
 
@@ -181,12 +184,12 @@ public class CrawlerTheOne {
 		}
 
 		//visitVol(vol);
-		visitVol(vol-VOL_GAP,vol);
+		visitVolsFromTo(vol-volnumber+1,vol);
 		hc.getConnectionManager().shutdown();
 	}
 
 	/**
-	 * »ñÈ¡OneÖĞµÄcita£¬¼´Ã¿ÈÕÒ»¸ö
+	 * è·å–Oneä¸­çš„citaï¼Œå³æ¯æ—¥ä¸€ä¸ª
 	 * @param entity
 	 * @throws IllegalStateException
 	 * @throws IOException
@@ -195,7 +198,7 @@ public class CrawlerTheOne {
 		InputStream inSm;
 
 		inSm = entity.getContent();
-		Scanner inScn = new Scanner(inSm/*, "UTF-8"*/);//É¨ÃèÆ÷
+		Scanner inScn = new Scanner(inSm/*, "UTF-8"*/);//æ‰«æå™¨
 		Matcher matcher;
 		
 		String cita="";
@@ -208,18 +211,18 @@ public class CrawlerTheOne {
         <p class="may">Aug 2014</p>
     </div>
     */
-		//»ñÈ¡vol±êºÅ
+		//è·å–volæ ‡å·
 		while (inScn.hasNextLine()) {
-			//¼ìË÷httpÏÂÒ»Ìõ
+			//æ£€ç´¢httpä¸‹ä¸€æ¡
 			String tmp=inScn.nextLine();
 			tmp=tmp.trim();
 
-			//¶¨Î»Ö¸¶¨ÌõÄ¿
+			//å®šä½æŒ‡å®šæ¡ç›®
 			matcher=prePattern.matcher(tmp);
 			if (matcher.find()){
-				tmp=inScn.nextLine();//È¡Ö¸¶¨ÌõÄ¿ºóÒ»Ìõ
-				tmp=deletHtml(tmp);//È¥³ıhtmlÔªËØ
-				tmp=tmp.trim();//È¥³ı¿Õ°×·û
+				tmp=inScn.nextLine();//å–æŒ‡å®šæ¡ç›®åä¸€æ¡
+				tmp=deletHtml(tmp);//å»é™¤htmlå…ƒç´ 
+				tmp=tmp.trim();//å»é™¤ç©ºç™½ç¬¦
 				//System.out.println(tmp);
 				cita=tmp;
 				break;
@@ -227,29 +230,32 @@ public class CrawlerTheOne {
 		}
 		
 		while (inScn.hasNextLine()) {
-			//¼ìË÷httpÏÂÒ»Ìõ
+			//æ£€ç´¢httpä¸‹ä¸€æ¡
 			String tmp=inScn.nextLine();
 			tmp=tmp.trim();
 			
 			matcher=domPat.matcher(tmp);
 			if (matcher.find()) {		
-				tmp=deletHtml(tmp);//È¥³ıhtmlÔªËØ
-				tmp=tmp.trim();//È¥³ı¿Õ°×·û
+				tmp=deletHtml(tmp);//å»é™¤htmlå…ƒç´ 
+				tmp=tmp.trim();//å»é™¤ç©ºç™½ç¬¦
 				//System.out.print(tmp);
 				data=tmp+" ";
 			}
 			
 			matcher=mayPat.matcher(tmp);
 			if (matcher.find()) {
-				tmp=deletHtml(tmp);//È¥³ıhtmlÔªËØ
-				tmp=tmp.trim();//È¥³ı¿Õ°×·û
+				tmp=deletHtml(tmp);//å»é™¤htmlå…ƒç´ 
+				tmp=tmp.trim();//å»é™¤ç©ºç™½ç¬¦
 				//System.out.print(tmp);
 				data+=tmp;
 				break;
 			}
 		}
 		
-		System.out.println(data+":"+cita);
+		String msg=data+":"+cita;
+		//msg=new String(msg.getBytes("gbk"));
+		//msg=new String(msg.getBytes("GBK"));
+		System.out.println(msg);
 	}
 
 	private void printConnect() {
@@ -263,10 +269,20 @@ public class CrawlerTheOne {
 	}
 
 
-	public final static void main(String[] args) throws Exception { 
+	public final static void main(String[] args) throws Exception {
+		int volnumber=VOL_COUNT;
+		
+		try {
+			if(args.length>=1){
+				volnumber=new Integer(args[0]);
+				System.out.println(""+volnumber);
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
 		CrawlerTheOne tc=new CrawlerTheOne();
-		tc.visitTheOne();
-
+		tc.visitTheOne(volnumber);
 	}
 
 }
